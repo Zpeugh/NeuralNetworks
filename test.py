@@ -52,7 +52,7 @@ training_data = [
 #         [[1,1], [0]]
 #     ]
 
-nn = MLP.MLP((4,4,1), eta=0.5, momentum=.6)
-nn.train(training_data, sigmoid, d_sigmoid, iterations=100000)
+nn = MLP.MLP((4,4,1), eta=0.15, momentum=.25)
+nn.train(training_data, sigmoid, d_sigmoid, iterations=20000)
 
 nn.test(training_data, sigmoid)

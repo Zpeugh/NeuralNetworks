@@ -12,13 +12,12 @@ class MLP:
         self.deltas = []
         self.num_layers = len(shape) - 1
 
-        # add input layer, plus 1 bias term
-        self.outputs.append(np.ones(shape[0] + 1))
+        # add input and hiden layers, plus 1 bias term for each
+        for i in range(0, len(shape) - 1):
+            self.outputs.append(np.ones(shape[i] + 1))
 
-        # add the rest of the layers
-        for i in range(1, len(shape)):
-            self.outputs.append(np.ones(shape[i]))
-
+        # Add output layer
+        self.outputs.append(np.ones(shape[-1]))
 
         for i in range(0, len(self.outputs) - 1):
             layer = len(self.outputs[i])
@@ -29,7 +28,7 @@ class MLP:
             weights = weights * weight_range + init_lower_bound
             self.weights.append(weights.reshape((layer, next_layer)))
         # print("weights: {0}".format(self.weights))
-        self.dw = [0,]*len(self.weights)
+        self.weight_change = [0,]*len(self.weights)
 
 
     # Given a neural network, activation function and inputs, the error vector is returned
@@ -57,31 +56,30 @@ class MLP:
 
 
     def __backpropogate(self, target):
-        ''' Back propagate error related to target using lrate. '''
 
         deltas = []
 
-        # Compute error on output layer
+        # Derive delta_k for output layer
         error = target - self.outputs[-1]
-        delta = error * self.backprop_func(self.outputs[-1])
-        deltas.append(delta)
-        # print("Delta K: {0}".format(deltas))
-        # Compute error on hidden layers
+        delta_k = error * self.backprop_func(self.outputs[-1])
+        deltas.append(delta_k)
+
+        # Derive delta_j's for hidden layers
         for i in range(len(self.shape)-2,0,-1):
             d_out = np.array(self.backprop_func(self.outputs[i]))
             # print("d_out: {0}:".format(d_out))
             # print("weights: {0}".format(self.weights[i].T))
-            delta = d_out * np.dot(deltas[0],self.weights[i].T)
+            delta_j = d_out * np.dot(deltas[0],self.weights[i].T)
             # print("delta_j: {0}".format(delta))
             deltas.insert(0,delta)
 
         # Update weights
         for i in range(len(self.weights)):
-            layer = np.atleast_2d(self.outputs[i])
+            output = np.atleast_2d(self.outputs[i])
             delta = np.atleast_2d(deltas[i])
-            dw = np.dot(layer.T,delta)
-            self.weights[i] += self.eta*dw + self.a*self.dw[i]
-            self.dw[i] = dw
+            weight_change = np.dot(output.T,delta)
+            self.weight_change[i] = weight_change
+            self.weights[i] += self.eta*weight_change + self.a*self.weight_change[i]
         # print("New weights: \n{0}".format(self.weights))
 
 
