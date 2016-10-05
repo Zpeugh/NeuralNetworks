@@ -4,8 +4,6 @@ import numpy as np
 
 reload(MLP)
 
-ALPHA = 1
-
 # def sig(x):
 #     return 1 / (1 + math.exp(-x))
 #
@@ -45,14 +43,8 @@ training_data = [
                     [[1,1,1,1], [0]]
                 ]
 
-# training_data = [
-#         [[0,0], [0]],
-#         [[0,1], [1]],
-#         [[1,0], [1]],
-#         [[1,1], [0]]
-#     ]
 
-nn = MLP.MLP((4,4,1), eta=0.15, momentum=.25)
-nn.train(training_data, sigmoid, d_sigmoid, iterations=20000)
+nn = MLP.MLP((4,4,1), eta=0.15, momentum=0)
+nn.train(training_data, sigmoid, d_sigmoid, iterations=40000)
 
 nn.test(training_data, sigmoid)
