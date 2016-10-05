@@ -1,28 +1,7 @@
 import MLP
+reload(MLP)
 import math
 import numpy as np
-
-reload(MLP)
-
-# def sig(x):
-#     return 1 / (1 + math.exp(-x))
-#
-# def sigmoid(x):
-#     return map(sig, x)
-#
-# def d_sig(x):
-#     return sig(x)* (1 - sig(x))
-#
-# def d_sigmoid(x):
-#     return map(d_sig, x)
-
-def sigmoid(x):
-    ''' Sigmoid like function using tanh '''
-    return np.tanh(x)
-
-def d_sigmoid(x):
-    ''' Derivative of sigmoid above '''
-    return 1.0-x**2
 
 training_data = [
                     [[0,0,0,0], [0]],
@@ -43,8 +22,17 @@ training_data = [
                     [[1,1,1,1], [0]]
                 ]
 
+momentums = [0, 0.9]
+etas = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
 
-nn = MLP.MLP((4,4,1), eta=0.15, momentum=0)
-nn.train(training_data, sigmoid, d_sigmoid, iterations=40000)
+number_of_epochs = np.zeros((len(momentums), len(etas)))
+sum_errors = np.zeros((len(momentums), len(etas)))
 
-nn.test(training_data, sigmoid)
+for j,a in enumerate(momentums):
+    for k, eta in enumerate(etas):
+        nn = MLP.MLP((4,4,1), eta=eta, momentum=a)
+        print("\n###########################")
+        print("Learning rate: {0}".format(eta))
+        print("Momentum: {0}".format(a))
+        number_of_epochs[j][k] = nn.train(training_data, max_epoch=1000000)
+        sum_errors[j][k] = nn.test(training_data)
