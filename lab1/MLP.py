@@ -3,23 +3,17 @@ import math
 
 np.random.seed()
 
-# def sig(x):
-#     return 1 / (1 + math.exp(-x))
-#
-# def sigmoid(x):
-#     return np.array(map(sig, x))
-#
-# def d_sig(x):
-#     return sig(x)* (1 - sig(x))
-#
-# def d_sigmoid(x):
-#     return np.array(map(d_sig, x))
-#
+def sig(x):
+    return 1 / (1 + math.exp(-x))
+
 def sigmoid(x):
-    return np.tanh(x)
+    return np.array(map(sig, x))
+
+def d_sig(x):
+    return sig(x)* (1 - sig(x))
 
 def d_sigmoid(x):
-    return 1.0-x**2
+    return np.array(map(d_sig, x))
 
 class MLP:
     def __init__(self, shape, eta=0.15, momentum=0, init_lower_bound=-1, init_upper_bound=1):
