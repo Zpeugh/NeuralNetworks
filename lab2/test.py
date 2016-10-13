@@ -48,24 +48,27 @@ def sample_function(x):
     return 0.5 + 0.4*math.sin(2 * math.pi * x)
 
 
+x, y = generate_noisy_data(sample_function, 75, (0,1), (-0.1,0.1))
 
+bases = [2,4,7,11,16]
+etas = [0.01,0.02]
 
-x, y = generate_noisy_data(sample_function, 75, (0,1), (-.1,.1))
-
-
-
-rbf_net = RBFNet((1,5,1))
-
-rbf_net.train(x, y, epochs=100)
-
-test_x = np.linspace(0,1,100)
+test_x = np.linspace(0,1,200)
 expected_y = map(sample_function, test_x)
 
-pred_y = rbf_net.test(test_x, expected_y)
+for eta in etas:
+    for num_bases in bases:
+        rbf_net = RBFNet((1,num_bases,1))
+        rbf_net.train(x, y, epochs=100)
 
-plt.scatter(x,y)
-plt.scatter(test_x, pred_y, color='r')
-plt.show()
+        pred_y = rbf_net.test(test_x, expected_y)
+
+        plt.clf()
+        fig = plt.figure()
+        plt.scatter(x,y)
+        plt.scatter(test_x, pred_y, color='r')
+        plt.title("Eta: {0}, Number of Bases: {1}".format(eta, num_bases))
+        fig.savefig("results/base_{0}_ete_{1}.jpg".format(num_bases, eta))
 #
 #
 #
