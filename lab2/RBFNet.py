@@ -67,7 +67,7 @@ class RBFNet:
         # print(self.activations)
         return self.activations.dot(self.weights)
 
-    def train(self, x, y, epochs=1):
+    def train(self, x, y, epochs=100):
         '''
             X   matrix with shape (n, input-dimension)
             Y   matrix with shape (n, output-dimension)
@@ -77,23 +77,20 @@ class RBFNet:
         for epoch in range(epochs):
             for i in range(len(x)):
                 d = self._forward_pass(x[i], y[i])
-
-                deltas = self.eta * (d - y[i]) * self.activations
-                self.weights = self.weights - deltas
-                print(self.weights)
-
-
-        # for i,center in enumerate(self.centers):
-        #     x_j = center[0]
-        #     y_j = center[1]
-        #     self.activations[0,i] = self._gaussian_activation(self.gaussian_widths[i], x, x_j)
-        #
-        #
-        # for i,x in enumerate(x):
+                error = (d - y[i])
+                # print("error", error)
+                deltas = self.eta * error * self.activations
+                # print("deltas",deltas.shape)
+                self.weights = self.weights - deltas.T
+                # print(self.weights.shape)
 
 
-        return 1
-
-
-    def test(self, data):
-        return 1
+    def test(self, x, y):
+        sum_error = 0
+        predicted_values = []
+        for i in range(len(x)):
+            d = self._forward_pass(x[i], y[i])
+            predicted_values.append(d)
+            sum_error += abs(d - y[i])
+        print("Average error: ", sum_error / len(x))
+        return predicted_values

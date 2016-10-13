@@ -30,12 +30,12 @@ from scipy.signal import gaussian
 def generate_noisy_data(func, n, x_interval, noise_interval):
     # get n inputs in x_interval
     X = np.random.random(n)
-    x_range = x_interval[0] - x_interval[1]
+    x_range = x_interval[1] - x_interval[0]
     X = X * x_range + x_interval[0]
 
     # get n noise values in noise_interval
     noise = np.random.random(n)
-    noise_range = noise_interval[0] - noise_interval[1]
+    noise_range = noise_interval[1] - noise_interval[0]
     noise = noise * noise_range + noise_interval[0]
 
     Y = map(func, X + noise)
@@ -52,11 +52,20 @@ def sample_function(x):
 
 x, y = generate_noisy_data(sample_function, 75, (0,1), (-.1,.1))
 
+
+
 rbf_net = RBFNet((1,5,1))
 
-rbf_net.train(x, y)
+rbf_net.train(x, y, epochs=100)
 
-# plt.scatter(x,y)
+test_x = np.linspace(0,1,100)
+expected_y = map(sample_function, test_x)
+
+pred_y = rbf_net.test(test_x, expected_y)
+
+plt.scatter(x,y)
+plt.scatter(test_x, pred_y, color='r')
+plt.show()
 #
 #
 #
