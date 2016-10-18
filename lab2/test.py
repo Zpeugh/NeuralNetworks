@@ -48,29 +48,34 @@ def sample_function(x):
     return 0.5 + 0.4*math.sin(2 * math.pi * x)
 
 
-x, y = generate_noisy_data(sample_function, 75, (0,1), (-0.1,0.1))
 
+############################ Begin Script ############################
+standardize_variance = [False, True]
 bases = [2,4,7,11,16]
 etas = [0.01,0.02]
 
+# Create the sample data
+x, y = generate_noisy_data(sample_function, 75, (0,1), (-0.1,0.1))
+
+# Create testing data
 test_x = np.linspace(0,1,200)
 expected_y = map(sample_function, test_x)
 
-for eta in etas:
-    for num_bases in bases:
-        rbf_net = RBFNet((1,num_bases,1))
-        rbf_net.train(x, y, epochs=100)
+for std_var in standardize_variance:
+    for eta in etas:
+        for num_bases in bases:
+            rbf_net = RBFNet((1,num_bases,1), standardize_variance=std_var)
+            rbf_net.train(x, y, epochs=100)
 
-        pred_y = rbf_net.test(test_x, expected_y)
+            pred_y = rbf_net.test(test_x, expected_y)
 
-        plt.clf()
-        fig = plt.figure()
-        plt.scatter(x,y)
-        plt.scatter(test_x, pred_y, color='r')
-        plt.title("Eta: {0}, Number of Bases: {1}".format(eta, num_bases))
-        fig.savefig("results/base_{0}_ete_{1}.jpg".format(num_bases, eta))
-#
-#
-#
-# plt.scatter(clusters[:,0], clusters[:,1], color='red', marker="x")
-# plt.show()
+            plt.clf()
+            fig = plt.figure()
+            plt.scatter(x,y)
+            plt.scatter(test_x, pred_y, color='r')
+            plt.scatter(test_x, expected_y, color='b')
+            if std_var:
+                plt.title("{0} Bases, Standardized Variance, Eta: {1},".format(num_bases, eta))
+            else:
+                plt.title("{0} Bases, Eta: {1},".format(num_bases, eta))
+            fig.savefig("results/base_{0}_eta_{1}_{2}.jpg".format(num_bases, eta, std_var))
