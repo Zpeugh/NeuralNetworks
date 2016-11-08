@@ -18,8 +18,11 @@ class RBFNet:
         '''
             A Radial Basis Function Neural Network
 
-            shape   tuple of integers as (input, centers, outputs)
-            eta     the learning parameter
+            shape                   tuple of integers as
+                                    (input, centers, outputs)
+            eta                     the learning parameter
+            standardize_variance    boolean to use an even gaussian
+                                    width for all clusters or not
         '''
         self.n_inputs = shape[0]
         self.n_centers = shape[1]
