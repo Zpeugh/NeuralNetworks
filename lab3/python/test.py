@@ -12,74 +12,42 @@
 # sys.path.append('C:\\Program Files\\LIBSVM\\libsvm-3.21\\python\\')
 import sklearn.svm as SVM
 import numpy as np
-from sklearn.svm import LinearSVC as Linear_SVM
+# from sklearn.svm import LinearSVC as Linear_SVM
 import matplotlib.pyplot as plt
+from svmutil import *
 
 
 TRAINING_DATA = "../data/training_data.txt"
 TESTING_DATA = "../data/test_data.txt"
 PART_1_RESULTS = "../results/part_1.png"
 
-# Read a line of n features and a label from a standard
-# libsvm format input file
-def read_line(line, expected_num_features=8):
+def randomly_partition()
 
-    data = line.split(' ')
-    features = np.zeros(expected_num_features)
-    label = int(data[0])
-
-    for i, feature in enumerate(data[1:]):
-        tup = feature.split(':')
-        features[int(tup[0])-1] = tup[1]
-
-    return label, features
-
-# Given the name of a file with data in standard libsvm compliant
-# format, return an array of labels and an array of feature arrays
-def import_data(file_name):
-    data = []
-    labels = []
-    with open(file_name) as f:
-        for line in f:
-            label, features = read_line(line)
-            labels.append(label)
-            data.append(features)
-    return np.array(labels, dtype=float), np.array(data, dtype=float)
-
-def accuracy(predicted, actual):
-    total = len(predicted)
-    missed = np.count_nonzero(np.array(predicted) - np.array(actual))
-    return 1 - (missed / float(total))
-
-def cross_validation(train_labels, train_data, test_labels, test_data, folds=5):
-
-    SVM.fit(train_data, train_labels, kernel='RBF', C=c)
-    return 1
-
-# Does
-def cv_matrix(C_values, a_values):
-    return 1
+def cross_validation(train_labels, train_data, test_labels, test_data, folds=5, c, a):
+    accuracies = []
+    for fold in range(folds):
+        model = svm_train(train_labels, train_data, "-t 2 -c {0} -g {1}".format(c, a))
+        p_labels, p_acc, p_vals = svm_predict(test_labels, test_data, model)
+        accuracies.append(p_acc[0])
+    return np.mean(accuracies)
 
 
 ############################ Begin Script ############################
 
-
-
-training_labels, training_data = import_data(TRAINING_DATA)
-
-testing_labels, testing_data = import_data(TESTING_DATA)
+train_labels, train_data = svm_read_problem(TRAINING_DATA)
+test_labels, test_data = svm_read_problem(TESTING_DATA)
 
 C_values = [2**x for x in np.arange(-4,9,1)]
+alphas = C_values
 ######################### Part 1: Linear SVMs #########################
+
 
 # accuracies = []
 # for c in C_values:
-#     svm = Linear_SVM(C=c)
-#     svm.fit(training_data, training_labels)
-#     predicted_values = svm.predict(testing_data)
-#     acc = accuracy(predicted_values, testing_labels)
-#     print("C: {0} | Accuracy: {1}".format(c, acc))
-#     accuracies.append(acc)
+#     model = svm_train(training_labels, training_data, "-t 0 -c {0}".format(c))
+#     p_labels, p_acc, p_vals = svm_predict(testing_labels, testing_data, model)
+#     accuracies.append(p_acc[0])
+#
 # plt.scatter(C_values, accuracies)
 # plt.xscale('log')
 # plt.xlabel("log(C)")
@@ -90,3 +58,10 @@ C_values = [2**x for x in np.arange(-4,9,1)]
 
 
 ########################## Part 2: RBF SVMs ###########################
+accuracies = np.zeros((len(C_values), len(alphas)))
+for i,c in enumerate(C_values):
+    for j,a in enumerate(alphas):
+        accuracies[i,j] = cross_validation(train_labels, train_data, test_labels, test_data, c, a)
+
+
+print(accuracies)
