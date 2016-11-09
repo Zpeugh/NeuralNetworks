@@ -20,14 +20,41 @@ from svmutil import *
 TRAINING_DATA = "../data/training_data.txt"
 TESTING_DATA = "../data/test_data.txt"
 PART_1_RESULTS = "../results/part_1.png"
+TRAINING_PERCENT = 0.5
 
-def randomly_partition()
+# Randomly shuffle the input data and then return a sample percent
+# of it back as condensed arrays of labels and data.
+def sample_data(labels, data, percent):
+    tuples = zip(labels, data)
+    shuffled_labels = []
+    shuffled_data = []
+    np.random.shuffle(tuples)
+    for tup in tuples:
+        shuffled_labels.append(tup[0])
+        shuffled_data.append(tup[1])
 
-def cross_validation(train_labels, train_data, test_labels, test_data, folds=5, c, a):
+    n_samples = int(len(labels) * percent)
+    return shuffled_labels[:n_samples], shuffled_data[:n_samples]
+
+
+def generate_partitions(labels, data, n_partitions):
+    p_size = len(labels) / float(n_partitions)
+    partitioned_labels = [ labels[int(round(p_size * x)): int(round(p_size * (x + 1)))] for x in range(n_partitions) ]
+    partitioned_data = [ data[int(round(p_size * x)): int(round(p_size * (x + 1)))] for x in range(n_partitions) ]
+    return partitioned_labels, partitioned_data
+
+def cross_validation(train_labels, train_data, c, a, folds=5):
     accuracies = []
-    for fold in range(folds):
-        model = svm_train(train_labels, train_data, "-t 2 -c {0} -g {1}".format(c, a))
-        p_labels, p_acc, p_vals = svm_predict(test_labels, test_data, model)
+    p_labels, p_data = generate_partitions(train_labels, train_data, folds)
+    for i in range(folds):
+        train_labels = []
+        train_data = []
+        for j in range(len(p_labels)):
+            if j is not i:
+                train_labels = np.concatenate((train_labels,p_labels[j]))
+                train_data = np.concatenate((train_data,p_data[j]))
+        model = svm_train(list(train_labels), list(train_data), "-t 2 -c {0} -g {1}".format(c, a))
+        pred_labels, p_acc, pred_vals = svm_predict(p_labels[i], p_data[i], model)
         accuracies.append(p_acc[0])
     return np.mean(accuracies)
 
@@ -59,9 +86,26 @@ alphas = C_values
 
 ########################## Part 2: RBF SVMs ###########################
 accuracies = np.zeros((len(C_values), len(alphas)))
+sampled_labels, sampled_data = sample_data(train_labels, train_data, TRAINING_PERCENT)
+
+best_c = 0
+best_a = 0
+max_acc = 0
+
 for i,c in enumerate(C_values):
     for j,a in enumerate(alphas):
-        accuracies[i,j] = cross_validation(train_labels, train_data, test_labels, test_data, c, a)
+        acc = cross_validation(sampled_labels, sampled_data, c, a)
+        if (acc > max_acc):
+            best_c = c
+            best_a = a
+            max_acc = acc
+        accuracies[i,j] = acc
 
+
+model = svm_train(train_labels, train_data, "-t 2 -c {0} -g {1}".format(best_c, best_a))
+pred_labels, accuracy, pred_vals = svm_predict(test_labels, test_data, model)
 
 print(accuracies)
+print("Optimal C: {0}".format(best_c))
+print("Optimal a: {0}".format(best_a))
+print("Optimal Accuracy: {0}".format(accuracy))
